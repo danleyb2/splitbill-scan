@@ -1,26 +1,26 @@
 
 var vision = require('@google-cloud/vision')({
-    projectId: 'valiant-xxxxx-126820',  // replace with your project Id
-    credentials: require('./My Project-googlecredential.json') // replace this with yours
-  });
+    projectId: 'united-course-178006',  // replace with your project Id
+    keyFilename: './united-course-178006-b4246963ec7c.json',
+});
 
 var storage = require('@google-cloud/storage')({
-    projectId: 'valiant-xxxxx-126820',  // replace with your project Id
-    credentials: require('./My Project-googlecredential.json') // replace this with yours
-  });
+    projectId: 'united-course-178006',  // replace with your project Id
+    keyFilename: './united-course-178006-b4246963ec7c.json',
+});
 
 
-var threshold = 10; // threshold for y coordinate (line) just in case image is skewed. 
+var threshold = 10; // threshold for y coordinate (line) just in case image is skewed.
                     // this is used for identifying each block of text are in the same line.
 var thresholdXPct = 20; // threshold for x coordinate - just in case the result is a skewed box
 
 module.exports = {
-  analyze: function(bucket, img, callback){
+  analyze: function(img, callback){
     console.log("detecting image: ",img);
-    console.log("image bucket location: ", bucket);
-  
-    // detecing text in image inside the bucket 
-    vision.detectText(storage.bucket(bucket).file(img), {
+    // console.log("image bucket location: ", bucket);
+
+    // detecing text in image inside the bucket
+    vision.detectText(img, {
       verbose:true
     },function(err, res) {
       // if error found during processing
@@ -44,7 +44,7 @@ module.exports = {
         var bounds = res[i].bounds;
         endx = Math.max(endx,Math.max(res[i].bounds[1].x,res[i].bounds[3].x)); // get the farthest right x coordinate
       }
-      
+
       endXMin = endx - thresholdXPct*endx/100; // calculate threshold for x
 
       // 2. construct sentence line by line.
@@ -56,14 +56,14 @@ module.exports = {
         if(line < 0) line = thisavg;
 
         // check if the middle of the 'word' is within the line threshold
-        if(Math.abs(thisavg - line) <= threshold){  
+        if(Math.abs(thisavg - line) <= threshold){
           s += " "+res[i].desc; // within the threshold, add to line with 'space delimited'
-        } 
+        }
         else{ // beyond threshold
           var avgendx = (lastbounds[1].x+lastbounds[3].x)/2;
-        
+
           if(avgendx >= endXMin){ // assume a new line, pushing the old sentence to the list.
-            sentences.push(s); 
+            sentences.push(s);
             sentencesBounds.push(bounds);
           }
           s = res[i].desc; // create new line
@@ -72,29 +72,29 @@ module.exports = {
         }
         line = thisavg;
         lastbounds = bounds;
-      } 
-      
+      }
+
       startx /= startxcount;
       startXMax = startx+thresholdXPct*startx/100;
       var result = [];
-      
+
       // 3. getting the 'last price' - from the rightest part of sentence and traverse to the left.
       for(var j in sentences){
         var sr = sentences[j].split(" ");
         console.log("--> setence is ",sentences[j]);
         console.log("---->sr is ",sr);
 
-        
+
         var numCandidate = "";
         var checkBefore = true;
 
         // going from right to left
         for (var iBack= sr.length; iBack--; iBack <=0 ) {
           var word = sr[iBack].trim();
-          
-          // google vision 'cuts' word by space (?), so sometime we see the amount 2, 000 is cut into 
+
+          // google vision 'cuts' word by space (?), so sometime we see the amount 2, 000 is cut into
           // 2 words, need to join this into a number.
-          if (word.startsWith(',') || word.startsWith('.')) {  
+          if (word.startsWith(',') || word.startsWith('.')) {
             word = word.replace(/,/g,"");
             var num = Number(word);
             if (!num) {
@@ -135,7 +135,7 @@ module.exports = {
             console.log('------>stop at word: '+word);
             break;
           }
-         
+
         }
 
         console.log("------>candidate is ",numCandidate);
@@ -146,7 +146,7 @@ module.exports = {
         if(!num || num < 100){
           if(result.length == 0 || num < 100)continue;
         }  else {
-          result.push ( 
+          result.push (
             { 'number': Number(numCandidate),
               'bounds': sentencesBounds[j]
             }
@@ -159,7 +159,7 @@ module.exports = {
       console.log("result ",JSON.stringify(result));
       console.log("End Detection...");
       callback(result);
-      
+
   });
   }
-}
+};
