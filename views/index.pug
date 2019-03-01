@@ -27,12 +27,12 @@ block content
   .card
     .card-body
       h5.card-title Recent
-
+      small click on an image to view results
       if receipts.length
         .row
           each pic, index in receipts
             .col-lg-3.col-md-4.col-xs-6.thumb.mb-2
-              a.thumbnail(href='#' data-date=pic.createdAt.toLocaleString() data-toggle='modal' data-title='' data-image=pic['path'] data-target='#exampleModal')
+              a.thumbnail(href='#' data-date=pic.createdAt.toLocaleString() data-toggle='modal' data-result=pic.result data-image=pic['path'] data-target='#exampleModal')
                 img.img-thumbnail(src=pic['path'] alt='Another alt text')
 
         #exampleModal.modal.fade(tabindex='-1' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true')
@@ -60,5 +60,5 @@ block scripts
 
         var modal = $(this)
         modal.find('.modal-title').text(date)
-        modal.find('.modal-body p').val(result)
+        modal.find('.modal-body p').text(JSON.stringify( result))
     })

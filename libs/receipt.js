@@ -1,12 +1,12 @@
 
 var vision = require('@google-cloud/vision')({
     projectId: 'united-course-178006',  // replace with your project Id
-    keyFilename: './united-course-178006-b4246963ec7c.json',
+    keyFilename: __dirname+'/../united-course-178006-b4246963ec7c.json',
 });
 
 var storage = require('@google-cloud/storage')({
     projectId: 'united-course-178006',  // replace with your project Id
-    keyFilename: './united-course-178006-b4246963ec7c.json',
+    keyFilename: __dirname+'/../united-course-178006-b4246963ec7c.json',
 });
 
 
@@ -24,7 +24,7 @@ module.exports = {
       verbose:true
     },function(err, res) {
       // if error found during processing
-      if (res == undefined) {
+      if (res === undefined) {
         console.log(err);
         console.log(err.errors[0].errors);
         callback({'error': 'Error processing file'});

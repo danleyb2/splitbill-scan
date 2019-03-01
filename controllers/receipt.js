@@ -21,7 +21,7 @@ exports.create = function (req, res, next) {
                 var fullPath = "files/"+req.file.filename;
 
 
-                receiptProcessor.analyze(function (result) {
+                receiptProcessor.analyze(req.file.path,function (result) {
                     var document = {
                         path:     fullPath,
                         result:   result
